@@ -300,5 +300,5 @@ def test():
                       float(loss(data, wav)), "; relative loss: ",
                       "{:.5}".format(float(loss(data, wav) / torch.mean(torch.abs(data))) * 100) + "%")
 
-# test()
+
 

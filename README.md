@@ -4,7 +4,7 @@ This's a package for subband decomposition.
 
 It can transform waveform into three kinds of subband feature representations. 
 
-[![483sBQ.png](https://z3.ax1x.com/2021/09/19/483sBQ.png)](https://imgtu.com/i/483sBQ)
+[![488zR0.png](https://z3.ax1x.com/2021/09/19/488zR0.png)](https://imgtu.com/i/488zR0)
 
 ## Reconstruction loss
 
@@ -41,8 +41,8 @@ subwav = model.wav_to_sub(input)
 reconstruct_1 = model.sub_to_wav(subwav,length=length)
 
 # Get subband magnitude spectrogram
-sub_spec,cos,sin = model.wav_to_spectrogram_phase(input)
-reconstruct_2 = model.spectrogram_phase_to_wav(sub_spec,cos,sin,length=length)
+sub_spec,cos,sin = model.wav_to_mag_phase_sub_spec(input)
+reconstruct_2 = model.mag_phase_sub_spec_to_wav(sub_spec,cos,sin,length=length)
 
 # Get subband complex spectrogram
 sub_complex_spec = model.wav_to_complex_sub_spec(input)
