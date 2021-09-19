@@ -30,7 +30,7 @@ test()
 from torchsubband import SubbandDSP
 import torch
 
-model = SubbandDSP(subband=2)
+model = SubbandDSP(subband=2) # nn.Module
 batchsize=3
 channel=1
 length = 44100*2

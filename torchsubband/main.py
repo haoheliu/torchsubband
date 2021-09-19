@@ -16,8 +16,9 @@ import numpy as np
 from torchsubband.pqmf import PQMF
 import torch.nn.functional as F
 from math import ceil
+from torch import nn
 
-class SubbandDSP():
+class SubbandDSP(nn.Module):
     def __init__(self,
              subband = 2,
              window_size=2048,
