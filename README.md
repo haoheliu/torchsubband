@@ -13,7 +13,7 @@ Installation
 pip install torchsubband
 ```
 
-An simple example: 
+A simple example: 
 
 ```python
 from torchsubband import SubbandDSP
