@@ -2,7 +2,7 @@
 
 This's a package for subband decomposition. 
 
-It can transform waveform into three kinds of subband feature representations. 
+It can transform waveform into three kinds of subband feature representations, which are potentially useful features for music source separation or similar tasks.
 
 [![488zR0.png](https://z3.ax1x.com/2021/09/19/488zR0.png)](https://imgtu.com/i/488zR0)
 
