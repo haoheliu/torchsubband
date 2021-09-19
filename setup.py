@@ -31,12 +31,13 @@ URL = 'https://github.com/haoheliu/torchsubband'
 EMAIL = 'haoheliu@gmail.com'
 AUTHOR = 'Haohe Liu'
 REQUIRES_PYTHON = '>=3.6.0'
-VERSION = '0.0.1'
+VERSION = '0.0.2'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
     "librosa>=0.8.1",
     "torch>=1.8.0",
+    "matplotlib",
     "torchlibrosa==0.0.7",
 ]
 

@@ -12,7 +12,6 @@
 
 from torchlibrosa.stft import STFT, ISTFT, magphase
 import torch
-import torch.nn as nn
 import numpy as np
 from torchsubband.pqmf import PQMF
 import torch.nn.functional as F
@@ -260,7 +259,7 @@ class SubbandDSP():
         return torch.cat(wavs,dim=1)
 
 def test():
-    from torchsubband import SubbandDSP
+    # from torchsubband import SubbandDSP
 
     loss = torch.nn.L1Loss()
 
@@ -270,8 +269,8 @@ def test():
             for channel in [1, 2, 3]:
                 model = SubbandDSP(subband=SUB)
                 data = torch.randn((3, channel, 44100 * length))
-                subwav = model.wav_to_subband(data)
-                wav = model.subband_to_wav(subwav, 44100 * length)
+                subwav = model.wav_to_sub(data)
+                wav = model.sub_to_wav(subwav, 44100 * length)
                 print(SUB, "subbands;", channel, "channels;", str(length) + "s audio;" " reconstruction l1loss: ",
                       float(loss(data, wav)), "; relative loss: ",
                       "{:.5}".format(float(loss(data, wav) / torch.mean(torch.abs(data))) * 100) + "%")
@@ -300,4 +299,5 @@ def test():
                       float(loss(data, wav)), "; relative loss: ",
                       "{:.5}".format(float(loss(data, wav) / torch.mean(torch.abs(data))) * 100) + "%")
 
+# test()
 

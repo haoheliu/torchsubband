@@ -4,7 +4,7 @@ This's a package for subband decomposition.
 
 It can transform waveform into three kinds of subband feature representations. 
 
-![subband_feature_representation](pics/subband_feature_representation.png)
+[![483sBQ.png](https://z3.ax1x.com/2021/09/19/483sBQ.png)](https://imgtu.com/i/483sBQ)
 
 ## Reconstruction loss
 
