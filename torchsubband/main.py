@@ -18,60 +18,73 @@ from torchsubband.pqmf import PQMF
 import torch.nn.functional as F
 from math import ceil
 
-class SubbandDSP(nn.Module):
+class SubbandDSP():
     def __init__(self,
              subband = 2,
              window_size=2048,
              hop_size=441,
-             center=True,
-             pad_mode='reflect',
-             window='hann',
-             freeze_parameters = True,
              ):
-
+        """
+        Args:
+            subband: int, [1,2,4,8]. The subband number you wanna divide. 'subbband==1' means do not need subband.
+            window_size: stft parameter
+            hop_size: stft parameter
+        """
         super(SubbandDSP, self).__init__()
+        center = True
+        pad_mode = 'reflect'
+        window = 'hann'
+        freeze_parameters = True
         self.subband = subband
         self.stft = STFT(n_fft=window_size // self.subband, hop_length=hop_size // self.subband,
                          win_length=window_size // self.subband, window=window, center=center,
                          pad_mode=pad_mode, freeze_parameters=freeze_parameters)
-
         self.istft = ISTFT(n_fft=window_size // self.subband, hop_length=hop_size // self.subband,
                            win_length=window_size // self.subband, window=window, center=center,
                            pad_mode=pad_mode, freeze_parameters=freeze_parameters)
-
         if(subband > 1):
             self.qmf = PQMF(subband, 64)
 
-    def _complex_spectrogram(self, input):
-        # [batchsize, samples]
-        # return [batchsize, 2, t-steps, f-bins]
-        real, imag = self.stft(input)
-        return torch.cat([real, imag], dim=1)
+    def wav_to_sub(self, input):
+        """
+        Convert input waveform into several subband signals
+        Args:
+            input: tensor, (batch_size, channels_num, samples)
+        Returns:
+            tensor, (batch_size, channels_num * subbandnum, ceil(samples / subbandnum))
+        """
+        length, pad = input.size()[-1], 0
+        while ((length + pad) % self.subband != 0):     pad += 1
+        input = F.pad(input, (0, pad))
+        if(self.subband > 1):
+            subwav = self.qmf.analysis(input) # [batchsize, subband*channels, samples]
+        else:
+            subwav = input
+        return subwav
 
-    def _reverse_complex_spectrogram(self, input, length=None):
-        # [batchsize, 2[real,imag], t-steps, f-bins]
-        wav = self.istft(input[:, 0:1, ...], input[:, 1:2, ...], length=length)
-        return wav
+    def sub_to_wav(self, subwav, length):
+        """
+        The reverse function of wav_to_subband.
+        Args:
+            subwav: tensor, (batch_size, channels_num * subband_nums, ceil(samples / subbandnum))
+            length: int, expect sample length of the output tensor
 
-    def _spectrogram(self, input):
-        (real, imag) = self.stft(input.float())
-        return torch.clamp(real ** 2 + imag ** 2, 1e-8, np.inf) ** 0.5
-
-    def _spectrogram_phase(self, input):
-        (real, imag) = self.stft(input.float())
-        mag = torch.clamp(real ** 2 + imag ** 2, 1e-8, np.inf) ** 0.5
-        cos = real / mag
-        sin = imag / mag
-        return mag, cos, sin
+        Returns:
+            tensor, (batch_size, channels_num, samples)
+        """
+        if(self.subband > 1): data = self.qmf.synthesis(subwav)
+        else: data = subwav
+        return data[...,:length]
 
     def wav_to_spectrogram_phase(self, input):
-        """Waveform to spectrogram.
-
+        """
+        Convert input waveform to magnitude spectrogram and phases.
         Args:
-          input: (batch_size, channels_num, segment_samples)
-
-        Outputs:
-          output: (batch_size, channels_num, time_steps, freq_bins)
+            input: (batch_size, channels_num, samples)
+        Returns:
+            magnitude spectrogram (batch_size, channels_num, time_steps, freq_bins),
+            phase angle cos: (batch_size, channels_num, time_steps, freq_bins)
+            phase angle sin: (batch_size, channels_num, time_steps, freq_bins)
         """
         sp_list = []
         cos_list = []
@@ -89,6 +102,16 @@ class SubbandDSP(nn.Module):
         return sps, coss, sins
 
     def spectrogram_phase_to_wav(self, sps, coss, sins, length):
+        """
+        The reverse function of wav_to_spectrogram_phase. Convert magnitude spectrogram and phase to waveform.
+        Args:
+            sps: tensor, magnitude spectrogram, (batch_size, channels_num, time_steps, freq_bins),
+            coss: tensor, phase angle, (batch_size, channels_num, time_steps, freq_bins)
+            sins: tensor, phase angle, (batch_size, channels_num, time_steps, freq_bins)
+            length: int, expect sample length of the output tensor
+        Returns:
+            output: tensor, (batch_size, channels_num, samples)
+        """
         channels_num = sps.size()[1]
         res = []
         for i in range(channels_num):
@@ -96,9 +119,99 @@ class SubbandDSP(nn.Module):
             res[-1] = res[-1].unsqueeze(1)
         return torch.cat(res,dim=1)
 
-    def wav_to_spectrogram(self, input):
-        """Waveform to spectrogram.
+    def wav_to_mag_phase_sub_spec(self, input):
+        """
+        Convert the input waveform to its subband spectrograms, which are concatenated in the channel dimension.
+        Args:
+            input: (batch_size, channels_num, samples)
+        Returns:
+                magnitude spectrogram (batch_size, channels_num * subband_num, time_steps, freq_bins // subband_num),
+                coss: (batch_size, channels_num * subband_num, time_steps, freq_bins // subband_num)
+                sins: (batch_size, channels_num * subband_num, time_steps, freq_bins // subband_num)
+        """
+        length, pad = input.size()[-1], 0
+        while ((length + pad) % self.subband != 0):  pad += 1
+        input = F.pad(input, (0, pad))
+        if(self.subband > 1):
+            subwav = self.qmf.analysis(input) # [batchsize, subband*channels, samples]
+        else:
+            subwav = input
+        sps, coss, sins = self.wav_to_spectrogram_phase(subwav)
+        return sps,coss,sins
 
+    def mag_phase_sub_spec_to_wav(self, sps, coss, sins, length):
+        """
+        The reverse functino of wav_to_mag_phase_subband_spectrogram. Convert subband magnutde spectrogram and its subband phases into fullband waveform.
+        Args:
+            sps: tensor, magnitude spectrogram (batch_size, channels_num * subband_num, time_steps, freq_bins // subband_num),
+            coss: tensor, (batch_size, channels_num * subband_num, time_steps, freq_bins // subband_num)
+            sins: tensor, (batch_size, channels_num * subband_num, time_steps, freq_bins // subband_num)
+            length: int, expect sample length of the output tensor
+        Returns:
+             tensor, (batch_size, channels_num, samples)
+        """
+        subwav = self.spectrogram_phase_to_wav(sps,coss,sins, ceil(length / self.subband) + 64 // self.subband)
+        if(self.subband > 1): data = self.qmf.synthesis(subwav)
+        else: data = subwav
+        return data[...,:length]
+
+    def wav_to_complex_sub_spec(self, input):
+        """
+        Convert waveform in each channel to several complex subband spectrogram. The real and imaginary parts are stored separately in different channels.
+        Args:
+            input: tensor, (batch_size, channels_num, samples)
+
+        Returns:
+            tensor, complex as channel spectrogram, (batch_size, 2 * channels_num * subband_num, time_steps, freq_bins // subband_num),
+        """
+        length, pad = input.size()[-1], 0
+        while ((length + pad) % self.subband != 0):  pad += 1
+        input = F.pad(input, (0, pad))
+        if (self.subband > 1):
+            subwav = self.qmf.analysis(input)  # [batchsize, subband*channels, samples]
+        else:
+            subwav = input
+        subspec = self._wav_to_complex_spectrogram(subwav)
+        return subspec
+
+    def complex_sub_spec_to_wav(self, sps, length):
+        """
+        The reverse function of wav_to_complex_subband_spectrogram. Convert complex spectrogram into waveform.
+        Args:
+            sps: tensor, complex as channel spectrogram, (batch_size, 2 * channels_num * subband_num, time_steps, freq_bins // subband_num),
+            length: int, expect sample length of the output tensor
+
+        Returns:
+            (batch_size, channels_num, samples)
+        """
+        subwav = self._complex_spectrogram_to_wav(sps, length =ceil(length / self.subband) + 64 // self.subband)
+        if (self.subband > 1):
+            data = self.qmf.synthesis(subwav)
+        else:
+            data = subwav
+        return data[...,:length]
+
+    def _complex_spectrogram(self, input):
+        real, imag = self.stft(input)
+        return torch.cat([real, imag], dim=1)
+
+    def _reverse_complex_spectrogram(self, input, length=None):
+        wav = self.istft(input[:, 0:1, ...], input[:, 1:2, ...], length=length)
+        return wav
+
+    def _spectrogram(self, input):
+        (real, imag) = self.stft(input.float())
+        return torch.clamp(real ** 2 + imag ** 2, 1e-8, np.inf) ** 0.5
+
+    def _spectrogram_phase(self, input):
+        (real, imag) = self.stft(input.float())
+        mag = torch.clamp(real ** 2 + imag ** 2, 1e-8, np.inf) ** 0.5
+        cos = real / mag
+        sin = imag / mag
+        return mag, cos, sin
+
+    def _wav_to_spectrogram(self, input):
+        """Waveform to spectrogram.
         Args:
           input: (batch_size,channels_num, segment_samples)
 
@@ -112,14 +225,14 @@ class SubbandDSP(nn.Module):
         output = torch.cat(sp_list, dim=1)
         return output
 
-    def spectrogram_to_wav(self, input, spectrogram, length=None):
+    def _spectrogram_to_wav(self, input, spectrogram, length=None):
         """Spectrogram to waveform.
         Args:
-          input: (batch_size, segment_samples, channels_num)
+          input: (batch_size, channels_num, segment_samples)
           spectrogram: (batch_size, channels_num, time_steps, freq_bins)
 
         Outputs:
-          output: (batch_size, segment_samples, channels_num)
+          tensor, (batch_size, channels_num, segment_samples)
         """
         channels_num = input.shape[1]
         wav_list = []
@@ -131,86 +244,14 @@ class SubbandDSP(nn.Module):
         output = torch.stack(wav_list, dim=1)
         return output
 
-    def wav_to_mag_phase_subband_spectrogram(self, input):
-        """
-        :param input:
-        :param eps:
-        :return:
-            loss = torch.nn.L1Loss()
-            model = FDomainHelper(subband=4)
-            data = torch.randn((3,1, 44100*3))
-
-            sps, coss, sins = model.wav_to_mag_phase_subband_spectrogram(data)
-            wav = model.mag_phase_subband_spectrogram_to_wav(sps,coss,sins,44100*3//4)
-
-            print(loss(data,wav))
-            print(torch.max(torch.abs(data-wav)))
-
-        """
-        length, pad = input.size()[-1], 0
-        while ((length + pad) % self.subband != 0):  pad += 1
-        input = F.pad(input, (0, pad))
-        if(self.subband > 1):
-            subwav = self.qmf.analysis(input) # [batchsize, subband*channels, samples]
-        else:
-            subwav = input
-        sps, coss, sins = self.wav_to_spectrogram_phase(subwav)
-        return sps,coss,sins
-
-    def mag_phase_subband_spectrogram_to_wav(self, sps,coss,sins, length):
-        # [batchsize, 2[real,imag]*subband*channels, t-steps, f-bins]
-        # [batchsize, channels, samples]
-        subwav = self.spectrogram_phase_to_wav(sps,coss,sins, ceil(length / self.subband) + 64 // self.subband)
-        if(self.subband > 1): data = self.qmf.synthesis(subwav)
-        else: data = subwav
-        return data[...,:length]
-
-    def wav_to_subband(self, input):
-        """
-        :param input:
-        :param eps:
-        :return:
-            loss = torch.nn.L1Loss()
-            model = FDomainHelper(subband=4)
-            data = torch.randn((3,1, 44100*3))
-
-            sps, coss, sins = model.wav_to_mag_phase_subband_spectrogram(data)
-            wav = model.mag_phase_subband_spectrogram_to_wav(sps,coss,sins,44100*3//4)
-
-            print(loss(data,wav))
-            print(torch.max(torch.abs(data-wav)))
-
-        """
-        length, pad = input.size()[-1], 0
-        while ((length + pad) % self.subband != 0):  pad += 1
-        input = F.pad(input, (0, pad))
-        if(self.subband > 1):
-            subwav = self.qmf.analysis(input) # [batchsize, subband*channels, samples]
-        else:
-            subwav = input
-        return subwav
-
-    def subband_to_wav(self, subwav, length):
-        # [batchsize, 2[real,imag]*subband*channels, t-steps, f-bins]
-        # [batchsize, channels, samples]
-        if(self.subband > 1): data = self.qmf.synthesis(subwav)
-        else: data = subwav
-        return data[...,:length]
-
-
-    # todo the following code is not bug free!
-    def wav_to_complex_spectrogram(self, input):
-        # [batchsize , channels, samples]
-        # [batchsize, 2[real,imag]*channels, t-steps, f-bins]
+    def _wav_to_complex_spectrogram(self, input):
         res = []
         channels_num = input.shape[1]
         for channel in range(channels_num):
             res.append(self._complex_spectrogram(input[:, channel, :]))
         return torch.cat(res,dim=1)
 
-    def complex_spectrogram_to_wav(self, input, length=None):
-        # [batchsize, 2[real,imag]*channels, t-steps, f-bins]
-        # return  [batchsize, channels, samples]
+    def _complex_spectrogram_to_wav(self, input, length=None):
         channels = input.size()[1] // 2
         wavs = []
         for i in range(channels):
@@ -218,35 +259,13 @@ class SubbandDSP(nn.Module):
             wavs[-1] = wavs[-1].unsqueeze(1)
         return torch.cat(wavs,dim=1)
 
-    def wav_to_complex_subband_spectrogram(self, input):
-        # [batchsize, channels, samples]
-        # [batchsize, 2[real,imag]*subband*channels, t-steps, f-bins]
-        length, pad = input.size()[-1], 0
-        while ((length + pad) % self.subband != 0):  pad += 1
-        input = F.pad(input, (0, pad))
-        if (self.subband > 1):
-            subwav = self.qmf.analysis(input)  # [batchsize, subband*channels, samples]
-        else:
-            subwav = input
-        subspec = self.wav_to_complex_spectrogram(subwav)
-        return subspec
-
-    def complex_subband_spectrogram_to_wav(self, input, length):
-        # [batchsize, 2[real,imag]*subband*channels, t-steps, f-bins]
-        # [batchsize, channels, samples]
-        subwav = self.complex_spectrogram_to_wav(input, length = ceil(length / self.subband) + 64 // self.subband)
-        if (self.subband > 1):
-            data = self.qmf.synthesis(subwav)
-        else:
-            data = subwav
-        return data[...,:length]
-
 def test():
+    from torchsubband import SubbandDSP
+
     loss = torch.nn.L1Loss()
 
-
     print("Convert time sequence into subband time samples.")
-    for SUB in [2, 4, 8]:
+    for SUB in [1, 2, 4, 8]:
         for length in range(1, 5):
             for channel in [1, 2, 3]:
                 model = SubbandDSP(subband=SUB)
@@ -257,26 +276,28 @@ def test():
                       float(loss(data, wav)), "; relative loss: ",
                       "{:.5}".format(float(loss(data, wav) / torch.mean(torch.abs(data))) * 100) + "%")
 
-    print("Convert time sequence into subband spectrograms.")
-    for SUB in [2, 4, 8]:
+    print("Convert time sequence into subband complex spectrogram")
+    for SUB in [1, 2, 4, 8]:
         for length in range(1, 5):
             for channel in [1, 2, 3]:
                 model = SubbandDSP(subband=SUB)
                 data = torch.randn((3, channel, 44100 * length))
-                sps = model.wav_to_complex_subband_spectrogram(data)
-                wav = model.complex_subband_spectrogram_to_wav(sps, 44100 * length)
+                sps = model.wav_to_complex_sub_spec(data)
+                wav = model.complex_sub_spec_to_wav(sps, 44100 * length)
                 print(SUB, "subbands;", channel, "channels;", str(length) + "s audio;" " reconstruction l1loss: ",
                       float(loss(data, wav)), "; relative loss: ",
                       "{:.5}".format(float(loss(data, wav) / torch.mean(torch.abs(data))) * 100) + "%")
 
-    print("Convert time sequence into subband complex as channel")
-    for SUB in [2, 4, 8]:
+    print("Convert time sequence into subband magnitude spectrograms and phase.")
+    for SUB in [1, 2, 4, 8]:
         for length in range(1, 5):
             for channel in [1, 2, 3]:
                 model = SubbandDSP(subband=SUB)
                 data = torch.randn((3, channel, 44100 * length))
-                sps, coss, sins = model.wav_to_mag_phase_subband_spectrogram(data)
-                wav = model.mag_phase_subband_spectrogram_to_wav(sps, coss, sins, 44100 * length)
+                sps, coss, sins = model.wav_to_mag_phase_sub_spec(data)
+                wav = model.mag_phase_sub_spec_to_wav(sps, coss, sins, 44100 * length)
                 print(SUB, "subbands;", channel, "channels;", str(length) + "s audio;" " reconstruction l1loss: ",
                       float(loss(data, wav)), "; relative loss: ",
                       "{:.5}".format(float(loss(data, wav) / torch.mean(torch.abs(data))) * 100) + "%")
+
+

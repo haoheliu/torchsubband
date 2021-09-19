@@ -1,0 +1,145 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module main</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>main</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/Users/liuhaohe/projects/torchsubband/torchsubband/main.py">/Users/liuhaohe/projects/torchsubband/torchsubband/main.py</a></font></td></tr></table>
+    <p><tt>@File&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;main.py&nbsp;&nbsp;&nbsp;&nbsp;<br>
+@Contact&nbsp;:&nbsp;&nbsp;&nbsp;haoheliu@gmail.com<br>
+@License&nbsp;:&nbsp;&nbsp;&nbsp;(C)Copyright&nbsp;2020-2100<br>
+&nbsp;<br>
+@Modify&nbsp;Time&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@Author&nbsp;&nbsp;&nbsp;&nbsp;@Version&nbsp;&nbsp;&nbsp;&nbsp;@Desciption<br>
+------------&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-------&nbsp;&nbsp;&nbsp;&nbsp;--------&nbsp;&nbsp;&nbsp;&nbsp;-----------<br>
+9/19/21&nbsp;4:07&nbsp;PM&nbsp;&nbsp;&nbsp;Haohe&nbsp;Liu&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;None</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="torch.nn.functional.html">torch.nn.functional</a><br>
+</td><td width="25%" valign=top><a href="torch.nn.html">torch.nn</a><br>
+</td><td width="25%" valign=top><a href="numpy.html">numpy</a><br>
+</td><td width="25%" valign=top><a href="torch.html">torch</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="builtins.html#object">builtins.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="main.html#SubbandDSP">SubbandDSP</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="SubbandDSP">class <strong>SubbandDSP</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt><a href="#SubbandDSP">SubbandDSP</a>(subband=2,&nbsp;window_size=2048,&nbsp;hop_size=441)<br>
+&nbsp;<br>
+<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="SubbandDSP-__init__"><strong>__init__</strong></a>(self, subband=2, window_size=2048, hop_size=441)</dt><dd><tt>Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;subband:&nbsp;int,&nbsp;[1,2,4,8].&nbsp;The&nbsp;subband&nbsp;number&nbsp;you&nbsp;wanna&nbsp;divide.&nbsp;'subbband==1'&nbsp;means&nbsp;do&nbsp;not&nbsp;need&nbsp;subband.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;window_size:&nbsp;stft&nbsp;parameter<br>
+&nbsp;&nbsp;&nbsp;&nbsp;hop_size:&nbsp;stft&nbsp;parameter</tt></dd></dl>
+
+<dl><dt><a name="SubbandDSP-complex_sub_spec_to_wav"><strong>complex_sub_spec_to_wav</strong></a>(self, sps, length)</dt><dd><tt>The&nbsp;reverse&nbsp;function&nbsp;of&nbsp;wav_to_complex_subband_spectrogram.&nbsp;Convert&nbsp;complex&nbsp;spectrogram&nbsp;into&nbsp;waveform.<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;sps:&nbsp;tensor,&nbsp;complex&nbsp;as&nbsp;channel&nbsp;spectrogram,&nbsp;(batch_size,&nbsp;2&nbsp;*&nbsp;channels_num&nbsp;*&nbsp;subband_num,&nbsp;time_steps,&nbsp;freq_bins&nbsp;//&nbsp;subband_num),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;length:&nbsp;int,&nbsp;expect&nbsp;sample&nbsp;length&nbsp;of&nbsp;the&nbsp;output&nbsp;tensor<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(batch_size,&nbsp;channels_num,&nbsp;samples)</tt></dd></dl>
+
+<dl><dt><a name="SubbandDSP-mag_phase_sub_spec_to_wav"><strong>mag_phase_sub_spec_to_wav</strong></a>(self, sps, coss, sins, length)</dt><dd><tt>The&nbsp;reverse&nbsp;functino&nbsp;of&nbsp;wav_to_mag_phase_subband_spectrogram.&nbsp;Convert&nbsp;subband&nbsp;magnutde&nbsp;spectrogram&nbsp;and&nbsp;its&nbsp;subband&nbsp;phases&nbsp;into&nbsp;fullband&nbsp;waveform.<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;sps:&nbsp;tensor,&nbsp;magnitude&nbsp;spectrogram&nbsp;(batch_size,&nbsp;channels_num&nbsp;*&nbsp;subband_num,&nbsp;time_steps,&nbsp;freq_bins&nbsp;//&nbsp;subband_num),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;coss:&nbsp;tensor,&nbsp;(batch_size,&nbsp;channels_num&nbsp;*&nbsp;subband_num,&nbsp;time_steps,&nbsp;freq_bins&nbsp;//&nbsp;subband_num)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;sins:&nbsp;tensor,&nbsp;(batch_size,&nbsp;channels_num&nbsp;*&nbsp;subband_num,&nbsp;time_steps,&nbsp;freq_bins&nbsp;//&nbsp;subband_num)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;length:&nbsp;int,&nbsp;expect&nbsp;sample&nbsp;length&nbsp;of&nbsp;the&nbsp;output&nbsp;tensor<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tensor,&nbsp;(batch_size,&nbsp;channels_num,&nbsp;samples)</tt></dd></dl>
+
+<dl><dt><a name="SubbandDSP-spectrogram_phase_to_wav"><strong>spectrogram_phase_to_wav</strong></a>(self, sps, coss, sins, length)</dt><dd><tt>The&nbsp;reverse&nbsp;function&nbsp;of&nbsp;wav_to_spectrogram_phase.&nbsp;Convert&nbsp;magnitude&nbsp;spectrogram&nbsp;and&nbsp;phase&nbsp;to&nbsp;waveform.<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;sps:&nbsp;tensor,&nbsp;magnitude&nbsp;spectrogram,&nbsp;(batch_size,&nbsp;channels_num,&nbsp;time_steps,&nbsp;freq_bins),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;coss:&nbsp;tensor,&nbsp;phase&nbsp;angle,&nbsp;(batch_size,&nbsp;channels_num,&nbsp;time_steps,&nbsp;freq_bins)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;sins:&nbsp;tensor,&nbsp;phase&nbsp;angle,&nbsp;(batch_size,&nbsp;channels_num,&nbsp;time_steps,&nbsp;freq_bins)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;length:&nbsp;int,&nbsp;expect&nbsp;sample&nbsp;length&nbsp;of&nbsp;the&nbsp;output&nbsp;tensor<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;output:&nbsp;tensor,&nbsp;(batch_size,&nbsp;channels_num,&nbsp;samples)</tt></dd></dl>
+
+<dl><dt><a name="SubbandDSP-sub_to_wav"><strong>sub_to_wav</strong></a>(self, subwav, length)</dt><dd><tt>The&nbsp;reverse&nbsp;function&nbsp;of&nbsp;wav_to_subband.<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;subwav:&nbsp;tensor,&nbsp;(batch_size,&nbsp;channels_num&nbsp;*&nbsp;subband_nums,&nbsp;<a href="#-ceil">ceil</a>(samples&nbsp;/&nbsp;subbandnum))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;length:&nbsp;int,&nbsp;expect&nbsp;sample&nbsp;length&nbsp;of&nbsp;the&nbsp;output&nbsp;tensor<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;tensor,&nbsp;(batch_size,&nbsp;channels_num,&nbsp;samples)</tt></dd></dl>
+
+<dl><dt><a name="SubbandDSP-wav_to_complex_sub_spec"><strong>wav_to_complex_sub_spec</strong></a>(self, input)</dt><dd><tt>Convert&nbsp;waveform&nbsp;in&nbsp;each&nbsp;channel&nbsp;to&nbsp;several&nbsp;complex&nbsp;subband&nbsp;spectrogram.&nbsp;The&nbsp;real&nbsp;and&nbsp;imaginary&nbsp;parts&nbsp;are&nbsp;stored&nbsp;separately&nbsp;in&nbsp;different&nbsp;channels.<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;input:&nbsp;tensor,&nbsp;(batch_size,&nbsp;channels_num,&nbsp;samples)<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;tensor,&nbsp;complex&nbsp;as&nbsp;channel&nbsp;spectrogram,&nbsp;(batch_size,&nbsp;2&nbsp;*&nbsp;channels_num&nbsp;*&nbsp;subband_num,&nbsp;time_steps,&nbsp;freq_bins&nbsp;//&nbsp;subband_num),</tt></dd></dl>
+
+<dl><dt><a name="SubbandDSP-wav_to_mag_phase_sub_spec"><strong>wav_to_mag_phase_sub_spec</strong></a>(self, input)</dt><dd><tt>Convert&nbsp;the&nbsp;input&nbsp;waveform&nbsp;to&nbsp;its&nbsp;subband&nbsp;spectrograms,&nbsp;which&nbsp;are&nbsp;concatenated&nbsp;in&nbsp;the&nbsp;channel&nbsp;dimension.<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;input:&nbsp;(batch_size,&nbsp;channels_num,&nbsp;samples)<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;magnitude&nbsp;spectrogram&nbsp;(batch_size,&nbsp;channels_num&nbsp;*&nbsp;subband_num,&nbsp;time_steps,&nbsp;freq_bins&nbsp;//&nbsp;subband_num),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;coss:&nbsp;(batch_size,&nbsp;channels_num&nbsp;*&nbsp;subband_num,&nbsp;time_steps,&nbsp;freq_bins&nbsp;//&nbsp;subband_num)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sins:&nbsp;(batch_size,&nbsp;channels_num&nbsp;*&nbsp;subband_num,&nbsp;time_steps,&nbsp;freq_bins&nbsp;//&nbsp;subband_num)</tt></dd></dl>
+
+<dl><dt><a name="SubbandDSP-wav_to_spectrogram_phase"><strong>wav_to_spectrogram_phase</strong></a>(self, input)</dt><dd><tt>Convert&nbsp;input&nbsp;waveform&nbsp;to&nbsp;magnitude&nbsp;spectrogram&nbsp;and&nbsp;phases.<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;input:&nbsp;(batch_size,&nbsp;channels_num,&nbsp;samples)<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;magnitude&nbsp;spectrogram&nbsp;(batch_size,&nbsp;channels_num,&nbsp;time_steps,&nbsp;freq_bins),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;phase&nbsp;angle&nbsp;cos:&nbsp;(batch_size,&nbsp;channels_num,&nbsp;time_steps,&nbsp;freq_bins)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;phase&nbsp;angle&nbsp;sin:&nbsp;(batch_size,&nbsp;channels_num,&nbsp;time_steps,&nbsp;freq_bins)</tt></dd></dl>
+
+<dl><dt><a name="SubbandDSP-wav_to_sub"><strong>wav_to_sub</strong></a>(self, input)</dt><dd><tt>Convert&nbsp;input&nbsp;waveform&nbsp;into&nbsp;several&nbsp;subband&nbsp;signals<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;input:&nbsp;tensor,&nbsp;(batch_size,&nbsp;channels_num,&nbsp;samples)<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;tensor,&nbsp;(batch_size,&nbsp;channels_num&nbsp;*&nbsp;subbandnum,&nbsp;<a href="#-ceil">ceil</a>(samples&nbsp;/&nbsp;subbandnum))</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-ceil"><strong>ceil</strong></a>(x, /)</dt><dd><tt>Return&nbsp;the&nbsp;ceiling&nbsp;of&nbsp;x&nbsp;as&nbsp;an&nbsp;Integral.<br>
+&nbsp;<br>
+This&nbsp;is&nbsp;the&nbsp;smallest&nbsp;integer&nbsp;&gt;=&nbsp;x.</tt></dd></dl>
+ <dl><dt><a name="-test"><strong>test</strong></a>()</dt></dl>
+</td></tr></table>
+</body></html>
