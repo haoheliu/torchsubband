@@ -19,10 +19,11 @@ A simple example:
 from torchsubband import SubbandDSP
 import torch
 
-model = SubbandDSP(subband=2) # nn.Module
-batchsize=3
-channel=1
-length = 44100*2
+# nn.Module
+model = SubbandDSP(subband=2) # You can choose 1,2,4, or 8 
+batchsize=3 # any int number
+channel=1 # any int number
+length = 44100*2 # any int number
 input = torch.randn((batchsize,channel,length))
 
 # Get subband waveform
