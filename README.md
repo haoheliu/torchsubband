@@ -1,3 +1,5 @@
+[![PyPI version](https://badge.fury.io/py/torchsubband.svg)](https://badge.fury.io/py/torchsubband)
+
 # torchsubband
 
 This's a package for subband decomposition. 
