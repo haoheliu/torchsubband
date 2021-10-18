@@ -38,7 +38,7 @@ REQUIRED = [
     "librosa>=0.8.1",
     "torch>=1.8.0",
     "matplotlib",
-    "torchlibrosa==0.0.7",
+    "torchlibrosa>=0.0.7,<=0.0.9",
 ]
 
 # What packages are optional?
