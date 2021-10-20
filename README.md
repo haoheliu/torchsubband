@@ -52,7 +52,7 @@ The following table shows the reconstruction quality. We tried a set of audio to
 | 4 | 1e-6  | 4.64 | 58.9 |
 | 8 | 5e-5  | 4.64 | 58.2 |
 
-You can also test this program by training the following test script. It will give you some evaluation output.
+You can also test this program by running the following test script. It will give you some evaluation output.
 
 ```python
 from torchsubband import test
