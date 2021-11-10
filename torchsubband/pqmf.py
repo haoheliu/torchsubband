@@ -712,29 +712,3 @@ class PQMF(nn.Module):
 
     def forward(self, inputs):
         return self.ana_conv_filter(self.ana_pad(inputs))
-
-if __name__ == "__main__":
-    a = load_mat2numpy("filters/h_8_64.mat")
-    print(a)
-    # import torch
-    # import numpy as np
-    # import matplotlib.pyplot as plt
-    # from tools.file.wav import *
-    # pqmf = PQMF(N=4, M=64,project_root="/Users/admin/Documents/projects")
-    #
-    # rs = np.random.RandomState(0)
-    # x = torch.tensor(rs.rand(4, 2, 32000),dtype=torch.float32)
-    #
-    # a1 = pqmf.analysis(x)
-    # a2 = pqmf.synthesis(a1)
-    #
-    # print(a2.size(), x.size())
-    #
-    # plt.subplot(211)
-    # plt.plot(x[0,0,-500:])
-    # plt.subplot(212)
-    # plt.plot(a2[0,0,-500:])
-    # plt.plot(x[0, 0, -500:]-a2[0, 0, -500:])
-    # plt.show()
-    #
-    # print(torch.sum(torch.abs(x[...] - a2[...])))

@@ -26,18 +26,16 @@ from setuptools import find_packages, setup, Command
 
 # Package meta-data.
 NAME = 'torchsubband'
-DESCRIPTION = 'This package is written for constructing subband features.'
+DESCRIPTION = 'This package is written for subband operations.'
 URL = 'https://github.com/haoheliu/torchsubband'
 EMAIL = 'haoheliu@gmail.com'
 AUTHOR = 'Haohe Liu'
 REQUIRES_PYTHON = '>=3.6.0'
-VERSION = '0.0.5'
+VERSION = '0.0.7'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    "librosa>=0.8.1",
     "torch>=1.8.0",
-    "matplotlib",
     "torchlibrosa>=0.0.7,<=0.0.9",
 ]
 
