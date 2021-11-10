@@ -693,10 +693,11 @@ class PQMF(nn.Module):
         :param inputs: [batchsize,channel,raw_wav],value:[0,1]
         :return:
         '''
-        batch, channels, samples = inputs.shape
         inputs = F.pad(inputs,((0,self.pad_samples)))
+        batch, _, samples = inputs.shape
         inputs = inputs.view(-1, 1, samples)
-        ret = self.__analysis_channel(inputs).view(batch, channels, -1)
+        ret = self.__analysis_channel(inputs)
+        ret = ret.view(batch, -1, ret.shape[2])
         return ret
 
     def synthesis(self, data):
@@ -704,7 +705,6 @@ class PQMF(nn.Module):
         :param data: [batchsize,self.N*K,raw_wav_sub],value:[0,1]
         :return:
         '''
-        ret = None
         batch, _, samples = data.shape
         ret = self.__systhesis_channel(data.view(-1, self.N, samples))
         ret = ret.view(batch, -1, ret.shape[2])[...,:-self.pad_samples]
