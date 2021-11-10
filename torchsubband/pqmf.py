@@ -693,10 +693,15 @@ class PQMF(nn.Module):
         :param inputs: [batchsize,channel,raw_wav],value:[0,1]
         :return:
         '''
-        batch, channels, samples = inputs.shape
         inputs = F.pad(inputs,((0,self.pad_samples)))
-        inputs = inputs.view(-1, 1, samples)
-        ret = self.__analysis_channel(inputs).view(batch, channels, -1)
+        ret = None
+        for i in range(inputs.size()[1]):  # channels
+            if (ret is None):
+                ret = self.__analysis_channel(inputs[:, i:i + 1, :])
+            else:
+                ret = torch.cat((ret,
+                                 self.__analysis_channel(inputs[:, i:i + 1, :]))
+                                , dim=1)
         return ret
 
     def synthesis(self, data):
@@ -705,9 +710,15 @@ class PQMF(nn.Module):
         :return:
         '''
         ret = None
-        batch, _, samples = data.shape
-        ret = self.__systhesis_channel(data.view(-1, self.N, samples))
-        ret = ret.view(batch, -1, ret.shape[2])[...,:-self.pad_samples]
+        # data = F.pad(data,((0,self.pad_samples//self.N)))
+        for i in range(data.size()[1]):  # channels
+            if (i % self.N == 0):
+                if (ret is None):
+                    ret = self.__systhesis_channel(data[:, i:i + self.N, :])
+                else:
+                    new = self.__systhesis_channel(data[:, i:i + self.N, :])
+                    ret = torch.cat((ret, new), dim=1)
+        ret = ret[...,:-self.pad_samples]
         return ret
 
     def forward(self, inputs):
