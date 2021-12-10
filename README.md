@@ -64,6 +64,17 @@ test()
 If you find our code useful for your research, please consider citing:
 
 ```bib
+    @misc{liu2021cwspresunet,
+        title={CWS-PResUNet: Music Source Separation with Channel-wise Subband Phase-aware ResUNet},
+        author={Haohe Liu and Qiuqiang Kong and Jiafeng Liu},
+        year={2021},
+        eprint={2112.04685},
+        archivePrefix={arXiv},
+        primaryClass={cs.SD}
+    }
+```
+
+```bib
     @inproceedings{Liu2020,   
       author={Haohe Liu and Lei Xie and Jian Wu and Geng Yang},   
       title={{Channel-Wise Subband Input for Better Voice and Accompaniment Separation on High Resolution Music}},   
