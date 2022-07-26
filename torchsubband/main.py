@@ -300,5 +300,53 @@ def test():
                       float(loss(data, wav)), "; relative loss: ",
                       "{:.5}".format(float(loss(data, wav) / torch.mean(torch.abs(data))) * 100) + "%")
 
+# if __name__ == "__main__":
+#     dsp = SubbandDSP()
+#     data = torch.randn((3, 2, 441000))
+#     wavegram, length = dsp.wav_to_wavegram(data, power_of_two=5)
+#     print(wavegram.size())
+#     waveform = dsp.wavegram_to_wav(wavegram, length, power_of_two=5)
+#     print(torch.mean(torch.abs(data-waveform)))
 
 
+if __name__ == "__main__":
+    import librosa
+    import matplotlib.pyplot as plt
+    x,_ = librosa.load("/Users/liuhaohe/Downloads/529.wav", sr=16000)
+    LOOPS=7
+    loss = torch.nn.L1Loss()
+    model = SubbandDSP(subband=2)
+    # data = torch.randn((3, 1, 16000 * 10))
+    data = torch.tensor(x[None, None,...])
+    original_data = data.clone()
+    length = []
+    for i in range(LOOPS):
+        length.append(data.shape[-1])
+        print("sub ", data.shape[-1])
+        data = model.wav_to_sub(data)
+        
+    print(data.size())
+    sign = data[0,...] < 0
+    # array = torch.log(torch.abs(data[0,...]))
+    # array[sign] *= -1
+    array=data[0,...]
+    array = array.numpy() 
+    array = array/np.max(np.abs(array))
+    
+    plt.imshow(np.log(np.abs(array + 1e-7)), aspect="auto")
+    plt.colorbar()
+    plt.savefig("temp.png")
+    intermediate = data.clone()
+    
+    # lim = torch.max(torch.abs(data))
+    # for i in range(intermediate.shape[1]):
+    #     # if(i>50): break
+    #     plt.ylim([-lim,lim])
+    #     plt.plot(intermediate[0,i,:].numpy())
+    #     plt.savefig("%s.png" % i)
+    #     plt.close()
+    
+    for i in range(LOOPS):
+        print("sync", length[(-(i+1))])
+        data = model.sub_to_wav(data, length=length[(-(i+1))])
+    print(loss(original_data, data))
