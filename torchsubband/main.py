@@ -41,9 +41,37 @@ class SubbandDSP(nn.Module):
                          pad_mode=pad_mode, freeze_parameters=freeze_parameters)
         self.istft = ISTFT(n_fft=window_size // self.subband, hop_length=hop_size // self.subband,
                            win_length=window_size // self.subband, window=window, center=center,
-                           pad_mode=pad_mode, freeze_parameters=freeze_parameters)
+                           pad_mode=pad_mode, freeze_parameters=freeze_parameters)   
         if(subband > 1):
             self.qmf = PQMF(subband, 64)
+
+    def wav_to_wavegram(self, input, power_of_two=5):
+        """
+        Convert input waveform into wavegram
+        Args:
+            input: tensor, (batch_size, channels_num, samples)
+        Returns:
+            tensor, 
+        """
+        assert self.subband == 2, "Error: To use wavegram feature, you need to set the subband number to 2."
+    
+        length = []
+        for _ in range(power_of_two):
+            length.append(input.shape[-1])
+            input = self.wav_to_sub(input)
+        return input, length
+    
+    def wavegram_to_wav(self, wavegram, length, power_of_two=5):
+        """
+        Convert wavegram into waveform
+        Args:
+            input: tensor, 
+        Returns:
+            tensor, (batch_size, channels_num, samples)
+        """
+        for i in range(power_of_two):
+            wavegram = self.sub_to_wav(wavegram, length=length[(-(i+1))])
+        return wavegram
 
     def wav_to_sub(self, input):
         """
@@ -300,5 +328,10 @@ def test():
                       float(loss(data, wav)), "; relative loss: ",
                       "{:.5}".format(float(loss(data, wav) / torch.mean(torch.abs(data))) * 100) + "%")
 
-
-
+if __name__ == "__main__":
+    dsp = SubbandDSP()
+    data = torch.randn((3, 2, 441000))
+    wavegram, length = dsp.wav_to_wavegram(data, power_of_two=10)
+    print(wavegram.size())
+    waveform = dsp.wavegram_to_wav(wavegram, length, power_of_two=10)
+    print(torch.mean(torch.abs(data-waveform)))
